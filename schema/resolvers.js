@@ -25,13 +25,10 @@ module.exports = {
           expiresIn: '1h'
         }
       );
-      res.setHeader('Set-Cookie', cookie.serialize('auth', jwt, {
+      res.cookie('token', jwt, {
         httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
-        sameSite: 'strict',
         maxAge: 3600,
-        path: '/'
-      }))
+      });
       return { id: user.id };
     }
   },
