@@ -1,6 +1,7 @@
 const { compare, hash } = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const secretKey = require('../secret')
+const cookie = require('cookie');
+const SECRET_KEY = require('../secret')
 const User = require('../models/user');
 
 module.exports = {
@@ -8,7 +9,7 @@ module.exports = {
     getUser:  () => {
       return User.findById('5f0d73eea63635e0bc6a6e58');
     },
-    login: async(_, {login, password}) => {
+    login: async(_, { login, password }, { res }) => {
       const user = await User.findOne({ login });
       if (!user) {
         throw new Error('User does not exist!');
@@ -19,11 +20,18 @@ module.exports = {
       }
       const token = jwt.sign(
         { id: user.id, login: user.login },
-        secretKey,
+        SECRET_KEY,
         {
           expiresIn: '1h'
         }
       );
+      res.setHeader('Set-Cookie', cookie.serialize('auth', jwt, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: 'strict',
+        maxAge: 3600,
+        path: '/'
+      }))
       return { id: user.id };
     }
   },

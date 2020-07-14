@@ -1,5 +1,6 @@
 const typeDefs  = require('../schema/typeDefs');
 const resolvers = require('../schema/resolvers');
+const getAuthenticatedUserId = require('../utils/getAuthenticatedUserId');
 const mongoose = require('mongoose');
 const { ApolloServer } = require('apollo-server');
 
@@ -7,7 +8,16 @@ const password = '43kusKdPlDqE22am';
 const dbName = 'cards';
 mongoose.connect(`mongodb+srv://ilya:${password}@cluster0.fyz4t.mongodb.net/${dbName}?retryWrites=true&w=majority`, { useNewUrlParser: true,useUnifiedTopology: true  });
 
-const server = new ApolloServer({ typeDefs, resolvers });
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: ({ req, res }) => {
+    const userId = getAuthenticatedUserId(req.headers.authorization || '');
+    return {
+      userId,
+      res
+    }
+  }});
 
 const dbConnection = mongoose.connection;
 dbConnection.on('error', err => console.log(`Connection error: ${err}`));
