@@ -12,11 +12,12 @@ const dbName = 'cards';
 mongoose.connect(`mongodb+srv://ilya:${password}@cluster0.fyz4t.mongodb.net/${dbName}?retryWrites=true&w=majority`, { useNewUrlParser: true,useUnifiedTopology: true  });
 
 app.use(cors());
-app.use(isAuth)
+app.use(isAuth);
 
 app.use('/graphql', graphqlHTTP({
   schema,
   graphiql: true,
+
 }));
 
 const dbConnection = mongoose.connection;

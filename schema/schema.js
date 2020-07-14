@@ -2,6 +2,7 @@ const graphql = require('graphql');
 const hash = require('bcrypt').hash;
 const jwt = require('jsonwebtoken');
 const secretKey = require('../secret')
+const cookie  =  require('cookie');
 const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLFloat } = graphql;
 
 const User = require('../models/user');
@@ -29,26 +30,31 @@ const Query = new GraphQLObjectType({
     login: {
       type: UserType,
       args: { login: { type: GraphQLString }, password: { type: GraphQLString } },
-      async resolve( parent, { login, password } ) {
+      async resolve( parent, { login, password }, context ) {
         const user = await User.find({ login });
         if (!user) {
           throw new Error('User does not exist!');
         }
-
-        const isEqual = await bcrypt.compare(password, user.password);
-        if (!isEqual) {
-          throw new Error('Password is incorrect!');
-        }
-
-        const token = jwt.sign(
-          { userId: user.id, email: user.email },
-          secretKey,
-          {
-            expiresIn: '1h'
+        bcrypt.compare(password, user.password, (err, result) => {
+          if (err) {
+            throw new Error('Password is incorrect!');
           }
-        );
-
-        return { id: user.id, token: token, tokenExpiration: 1 };
+          const token = jwt.sign(
+            { id: user.id, login: user.login },
+            secretKey,
+            {
+              expiresIn: '1h'
+            }
+          );
+          context.req.setHeader('Set-Cookie', cookie.serialize('auth', jwt, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development',
+            sameSite: 'strict',
+            maxAge: 3600,
+            path: '/'
+          }))
+        });
+        return { id: user.id };
       }
     }
   }
@@ -63,7 +69,7 @@ const Mutation = new GraphQLObjectType({
         login: { type: new GraphQLNonNull(GraphQLString) },
         password: { type: new GraphQLNonNull(GraphQLString) },
       },
-      async resolve( parent, { login, password } ) {
+      async resolve( parent, { login, password }, context) {
         try {
           const existingUser = await User.find({ login });
           if ( existingUser ) {
