@@ -7,7 +7,7 @@ const Collections = require("../models/collections");
 const SpiderManHeroesAndVillainsPart1 = require("../models/spider-man-heroes-and-villains-part-1");
 module.exports = {
   Query: {
-    getUser: ( _, __, context ) => {
+    user: ( _, __, context ) => {
       return User.findById("5f0e02f09cd4921430b102a3");
     },
     login: async ( _, { login, password }, { res } ) => {
@@ -48,14 +48,14 @@ module.exports = {
 
       return userAuthId
     },
-    getSpiderManCards: async ( _, { from, limit, collectionPart }, { userAuthId } ) => {
+    spiderManCards: async ( _, { from, limit, collectionPart }, { userAuthId } ) => {
       const currentUser = await User.findById(userAuthId);
       if(!currentUser) {
         throw new Error("You are hasn`t access here")
       }
       return SpiderManHeroesAndVillainsPart1.find().sort( "number asc" ).skip(from - 1).limit(limit)
     },
-    getCardCollections: () => {
+    cardCollections: () => {
       return Collections.find();
     }
   },
