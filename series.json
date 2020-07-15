@@ -1,0 +1,32 @@
+{
+  1: {
+    "name": "Spider-Man Heroes and Villains part 1",
+    "imageUrl": "http://www.geroiizlodei.ru/chp1/0.jpg",
+    "cardsCount": 275,
+    "release": 2008
+  },
+  "Spider-Man Heroes and Villains part 2": {
+    "name": "Spider-Man Heroes and Villains part 2",
+    "imageUrl": "http://www.geroiizlodei.ru/chp1/0.jpg",
+    "cardsCount": 275,
+    "release": 2009
+  },
+  "Spider-Man Heroes and Villains part 3": {
+    "name": "Spider-Man Heroes and Villains part 3",
+    "imageUrl": "http://www.geroiizlodei.ru/chp1/0.jpg",
+    "cardsCount": 275,
+    "release": 2010
+  },
+  "Teenage Mutant Ninja Turtles Combat four": {
+    "name": "Teenage Mutant Ninja Turtles Combat four",
+    "imageUrl": "http://www.geroiizlodei.ru/chnin/0.jpg",
+    "cardsCount": 267,
+    "release": 2010
+  },
+  "Teenage Mutant Ninja Turtles Shadow Warriors": {
+    "name": "Teenage Mutant Ninja Turtles Shadow Warriors",
+    "imageUrl": "http://www.geroiizlodei.ru/chnin/0.jpg",
+    "cardsCount": 260,
+    "release": 2010
+  }
+}
