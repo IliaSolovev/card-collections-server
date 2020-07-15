@@ -28,7 +28,7 @@ module.exports = gql`
   
   type CardCollection {
       id: ID!,
-      nameString: String!
+      name: String!
       imageUrl: String
       cardsCount: Int!
       release: Int!
