@@ -16,6 +16,7 @@ module.exports = gql`
   }
   
   type SpiderManCard {
+      id: ID!
       name: String!
       imageUrl: String!
       type: String!

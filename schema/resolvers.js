@@ -47,7 +47,11 @@ module.exports = {
 
       return userAuthId
     },
-    getSpiderManCards: ( _, { from, limit, collectionPart }, { userAuthId } ) => {
+    getSpiderManCards: async ( _, { from, limit, collectionPart }, { userAuthId } ) => {
+      const currentUser = await User.findById(userAuthId);
+      if(!currentUser) {
+        throw new Error("You are hasn`t access here")
+      }
       return SpiderManHeroesAndVillainsPart1.find().sort( "number asc" ).skip(from - 1).limit(limit)
     },
   },
