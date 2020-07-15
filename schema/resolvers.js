@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const cookie = require("cookie");
 const SECRET_KEY = require("../secret");
 const User = require("../models/user");
+const Collections = require("../models/collections");
 const SpiderManHeroesAndVillainsPart1 = require("../models/spider-man-heroes-and-villains-part-1");
 module.exports = {
   Query: {
@@ -54,6 +55,9 @@ module.exports = {
       }
       return SpiderManHeroesAndVillainsPart1.find().sort( "number asc" ).skip(from - 1).limit(limit)
     },
+    getCardCollections: () => {
+      return Collections.find();
+    }
   },
   Mutation: {
     registerUser: async ( _, { login, password } ) => {

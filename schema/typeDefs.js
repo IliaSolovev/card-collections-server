@@ -26,11 +26,20 @@ module.exports = gql`
       number: Int!
   }
   
+  type CardCollection {
+      id: ID!,
+      nameString: String!
+      imageUrl: String
+      cardsCount: Int!
+      release: Int!
+  }
+  
   type Query {
     getUser: User!
     login(login: String!, password: String!): LoginResponse!
     logout: LogoutResponse!
     getSpiderManCards(from: Int!,limit: Int!, collectionPart: Int!): [SpiderManCard]!
+    getCardCollections: [CardCollection]!  
   }
   type Mutation {
       registerUser(login: String!, password: String!): RegisterResponse!
