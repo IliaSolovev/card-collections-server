@@ -6,8 +6,8 @@ const User = require("../models/user");
 
 module.exports = {
   Query: {
-    getUser: () => {
-      return User.findById("5f0d73eea63635e0bc6a6e58");
+    getUser: (_, __,  context ) => {
+      return User.findById("5f0e02f09cd4921430b102a3");
     },
     login: async (_, { login, password }, { res }) => {
       const user = await User.findOne({ login });

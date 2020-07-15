@@ -1,10 +1,12 @@
-const typeDefs = require("../schema/typeDefs");
-const resolvers = require("../schema/resolvers");
 const getAuthenticatedUserId = require("../utils/getAuthenticatedUserId");
 const mongoose = require("mongoose");
 const { ApolloServer } = require("apollo-server-express");
 const express = require("express");
 const cors = require("cors")
+const cookieParser = require('cookie-parser')
+
+const typeDefs = require("../schema/typeDefs");
+const resolvers = require("../schema/resolvers");
 
 const password = "43kusKdPlDqE22am";
 const dbName = "cards";
@@ -16,15 +18,16 @@ mongoose.connect(
 const app = express();
 
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(cookieParser())
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: ({ req, res }) => {
-    const userId = getAuthenticatedUserId(req.headers.authorization || "");
+    const userAuthId = getAuthenticatedUserId(req.cookies.token || "");
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
     return {
-      userId,
+      userAuthId,
       res,
     };
   },

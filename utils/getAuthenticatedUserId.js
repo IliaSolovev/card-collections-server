@@ -1,11 +1,7 @@
 const jwt = require('jsonwebtoken');
 const SECRET_KEY = require('../secret')
 
-module.exports = ( authHeader ) => {
-  if ( !authHeader ) {
-    return null;
-  }
-  const token = authHeader.split(' ')[1];
+module.exports = ( token ) => {
   if ( !token || token === '' ) {
     return null;
   }
