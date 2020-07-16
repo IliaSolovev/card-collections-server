@@ -12,28 +12,7 @@ module.exports = {
     user: ( _, __, context ) => {
       return User.findById("5f0e02f09cd4921430b102a3");
     },
-    login: async ( _, { login, password }, { res } ) => {
-      const user = await User.findOne({ login });
-      if ( !user ) {
-        const error = new Error("User does not exist!");
-        error.status = 403;
-        throw error;
-      }
 
-      const isEqual = await compare(password, user.password);
-      if ( !isEqual ) {
-        const error = new Error("Password is incorrect!");
-        error.status = 403;
-        throw error;
-      }
-
-      const { accessToken, refreshToken } = createTokens(user.id, user.login);
-      setTokensIntoHeader(accessToken, refreshToken, res);
-
-      await RefreshToken.findOneAndUpdate({ userId: user.id}, {token: refreshToken});
-
-      return { id: user.id };
-    },
     logout: ( _, __, { res, userAuthId } ) => {
 
       res.setHeader(
@@ -85,5 +64,26 @@ module.exports = {
       await refreshToken.save();
       return { id: registeredUser.id, login: registeredUser.login };
     },
-  },
+    login: async ( _, { login, password }, { res } ) => {
+      const user = await User.findOne({ login });
+      if ( !user ) {
+        const error = new Error("User does not exist!");
+        error.status = 403;
+        throw error;
+      }
+
+      const isEqual = await compare(password, user.password);
+      if ( !isEqual ) {
+        const error = new Error("Password is incorrect!");
+        error.status = 403;
+        throw error;
+      }
+
+      const { accessToken, refreshToken } = createTokens(user.id, user.login);
+      setTokensIntoHeader(accessToken, refreshToken, res);
+
+      await RefreshToken.findOneAndUpdate({ userId: user.id}, {token: refreshToken});
+      return { id: user.id };
+    },
+  }
 };

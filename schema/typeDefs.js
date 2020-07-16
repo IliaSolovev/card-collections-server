@@ -36,7 +36,6 @@ module.exports = gql`
   
   type Query {
     user: User!
-    login(login: String!, password: String!): LoginResponse!
     logout: LogoutResponse!
     spiderManCards(from: Int!,limit: Int!, collectionPart: Int!): [SpiderManCard]!
     cardCollections: [CardCollection]!  
@@ -44,5 +43,7 @@ module.exports = gql`
 
   type Mutation {
     registerUser(login: String!, password: String!): RegisterResponse!
+    login(login: String!, password: String!): LoginResponse!
+
   }
 `;
