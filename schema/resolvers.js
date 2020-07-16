@@ -6,6 +6,7 @@ const Collections = require("../models/collections");
 const SpiderManHeroesAndVillainsPart1 = require("../models/spider-man-heroes-and-villains-part-1");
 const createTokens = require('../utils/createTokens');
 const setTokensIntoHeader = require('../utils/setTokensIntoHeader');
+const getAuthenticatedUserId = require('../utils/getAuthenticatedUserId')
 
 module.exports = {
   Query: {
@@ -13,8 +14,8 @@ module.exports = {
       return User.findById("5f0e02f09cd4921430b102a3");
     },
 
-    logout: ( _, __, { res, userAuthId } ) => {
-
+    logout: ( _, __, { req, res } ) => {
+      const userAuthId = getAuthenticatedUserId(req.cookies.accessToken || "");
       res.setHeader(
         "Set-Cookie",
         cookie.serialize("accessToken", '', {
@@ -27,7 +28,8 @@ module.exports = {
 
       return userAuthId
     },
-    spiderManCards: async ( _, { from, limit, collectionPart }, { userAuthId } ) => {
+    spiderManCards: async ( _, { from, limit, collectionPart }, { req } ) => {
+      const userAuthId = getAuthenticatedUserId(req.cookies.accessToken || "");
       const currentUser = await User.findById(userAuthId);
       if ( !currentUser ) {
         const error = new Error("You are hasn`t access here!");
@@ -79,11 +81,26 @@ module.exports = {
         throw error;
       }
 
-      const { accessToken, refreshToken } = createTokens(user.id, user.login);
+      const { accessToken, refreshToken } = createTokens(user.id);
       setTokensIntoHeader(accessToken, refreshToken, res);
 
-      await RefreshToken.findOneAndUpdate({ userId: user.id}, {token: refreshToken});
+      await RefreshToken.findOneAndUpdate({ userId: user.id }, { token: refreshToken });
       return { id: user.id };
     },
+    refreshToken: async ( _, __, { res, req } ) => {
+      const userAuthId = getAuthenticatedUserId(req.cookies.accessToken || "");
+
+      const token = await RefreshToken.find({ token: req.cookies.refreshToken })
+      if(!token){
+        const error = new Error("Your refresh token expired");
+        error.status = 403;
+      }
+
+      const { accessToken, refreshToken } = createTokens(userAuthId);
+      setTokensIntoHeader(accessToken, refreshToken, res);
+
+      await RefreshToken.findOneAndUpdate({ userId: userAuthId }, { token: refreshToken });
+      return { id: userAuthId };
+    }
   }
 };

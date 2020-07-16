@@ -1,4 +1,3 @@
-const getAuthenticatedUserId = require("../utils/getAuthenticatedUserId");
 const mongoose = require("mongoose");
 const { ApolloServer } = require("apollo-server-express");
 const express = require("express");
@@ -24,10 +23,9 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: ({ req, res }) => {
-    const userAuthId = getAuthenticatedUserId(req.cookies.accessToken || "");
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
     return {
-      userAuthId,
+      req,
       res,
     };
   },

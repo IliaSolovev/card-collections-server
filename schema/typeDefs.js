@@ -44,6 +44,6 @@ module.exports = gql`
   type Mutation {
     registerUser(login: String!, password: String!): RegisterResponse!
     login(login: String!, password: String!): LoginResponse!
-
+    refreshToken: User!
   }
 `;
