@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const SECRET_KEY = require('../secret')
+const SECRET_KEYS = require('../secretKeys')
 
 module.exports = ( token ) => {
   if ( !token || token === '' ) {
@@ -7,7 +7,7 @@ module.exports = ( token ) => {
   }
   let decodedToken;
   try {
-    decodedToken = jwt.verify(token, SECRET_KEY);
+    decodedToken = jwt.verify(token, SECRET_KEYS.SECRET_ACCESS_KEY);
   } catch (err) {
     return null;
   }

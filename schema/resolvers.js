@@ -1,10 +1,12 @@
 const { compare, hash } = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const cookie = require("cookie");
-const SECRET_KEY = require("../secret");
+
 const User = require("../models/user");
+const RefreshToken = require("../models/refreshToken");
 const Collections = require("../models/collections");
 const SpiderManHeroesAndVillainsPart1 = require("../models/spider-man-heroes-and-villains-part-1");
+const createTokens = require('../utils/createTokens');
+const setTokensIntoHeader = require('../utils/setTokensIntoHeader');
+
 module.exports = {
   Query: {
     user: ( _, __, context ) => {
@@ -12,33 +14,31 @@ module.exports = {
     },
     login: async ( _, { login, password }, { res } ) => {
       const user = await User.findOne({ login });
-
       if ( !user ) {
-        throw new Error("User does not exist!");
+        const error = new Error("User does not exist!");
+        error.status = 403;
+        throw error;
       }
+
       const isEqual = await compare(password, user.password);
       if ( !isEqual ) {
-        throw new Error("Password is incorrect!");
+        const error = new Error("Password is incorrect!");
+        error.status = 403;
+        throw error;
       }
-      const token = jwt.sign({ id: user.id, login: user.login }, SECRET_KEY, {
-        expiresIn: "1h",
-      });
-      res.setHeader(
-        "Set-Cookie",
-        cookie.serialize("token", token, {
-          httpOnly: true,
-          sameSite: "strict",
-          maxAge: 3600,
-          path: "/",
-        })
-      );
+
+      const { accessToken, refreshToken } = createTokens(user.id, user.login);
+      setTokensIntoHeader(accessToken, refreshToken, res);
+
+      await RefreshToken.findOneAndUpdate({ userId: user.id}, {token: refreshToken});
+
       return { id: user.id };
     },
     logout: ( _, __, { res, userAuthId } ) => {
 
       res.setHeader(
         "Set-Cookie",
-        cookie.serialize("token", '', {
+        cookie.serialize("accessToken", '', {
           httpOnly: true,
           sameSite: "strict",
           maxAge: 3600,
@@ -50,10 +50,12 @@ module.exports = {
     },
     spiderManCards: async ( _, { from, limit, collectionPart }, { userAuthId } ) => {
       const currentUser = await User.findById(userAuthId);
-      if(!currentUser) {
-        throw new Error("You are hasn`t access here")
+      if ( !currentUser ) {
+        const error = new Error("You are hasn`t access here!");
+        error.status = 403;
+        throw error;
       }
-      return SpiderManHeroesAndVillainsPart1.find().sort( "number asc" ).skip(from - 1).limit(limit)
+      return SpiderManHeroesAndVillainsPart1.find().sort("number asc").skip(from - 1).limit(limit)
     },
     cardCollections: () => {
       return Collections.find();
@@ -61,24 +63,27 @@ module.exports = {
   },
   Mutation: {
     registerUser: async ( _, { login, password } ) => {
-      try {
-        const existingUser = await User.findOne({ login });
+      const existingUser = await User.findOne({ login });
 
-        if ( existingUser ) {
-          throw new Error("User exists already.");
-        }
-        const hashedPassword = await hash(password, 12);
-        const user = new User({
-          login,
-          password: hashedPassword,
-        });
-
-        const result = await user.save();
-
-        return { id: result.id, login: user.login };
-      } catch (err) {
-        throw err;
+      if ( existingUser ) {
+        const error = new Error("User exists already!");
+        error.status = 403;
+        throw error;
       }
+      const hashedPassword = await hash(password, 12);
+      const user = new User({
+        login,
+        password: hashedPassword,
+
+      });
+      const registeredUser = await user.save();
+
+      const refreshToken = new RefreshToken({
+        token: '',
+        userId: registeredUser.id
+      })
+      await refreshToken.save();
+      return { id: registeredUser.id, login: registeredUser.login };
     },
   },
 };

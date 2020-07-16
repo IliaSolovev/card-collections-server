@@ -24,7 +24,7 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: ({ req, res }) => {
-    const userAuthId = getAuthenticatedUserId(req.cookies.token || "");
+    const userAuthId = getAuthenticatedUserId(req.cookies.accessToken || "");
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
     return {
       userAuthId,
@@ -37,6 +37,7 @@ server.applyMiddleware({
   app
 });
 
+mongoose.set('useFindAndModify', false);
 const dbConnection = mongoose.connection;
 dbConnection.on("error", (err) => console.log(`Connection error: ${err}`));
 dbConnection.once("open", () => console.log("Connected to DB!"));
