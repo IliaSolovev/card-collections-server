@@ -28,15 +28,15 @@ module.exports = {
 
       return userAuthId
     },
-    spiderManCards: async ( _, { from, limit, collectionPart }, { req } ) => {
+    spiderManCards: async ( _, { from, limit = 1, collectionPart = 1 }, { req } ) => {
       const userAuthId = getAuthenticatedUserId(req.cookies.accessToken || "");
       const currentUser = await User.findById(userAuthId);
       if ( !currentUser ) {
         const error = new Error("You are hasn`t access here!");
-        error.status = 403;
+        error.status = 401;
         throw error;
       }
-      return SpiderManHeroesAndVillainsPart1.find().sort("number asc").skip(from - 1).limit(limit)
+      return SpiderManHeroesAndVillainsPart1.find().sort("number asc").skip(((collectionPart - 1) * 275) + (from - 1)).limit(limit)
     },
     cardCollections: () => {
       return Collections.find();
@@ -93,7 +93,7 @@ module.exports = {
       const token = await RefreshToken.find({ token: req.cookies.refreshToken })
       if(!token){
         const error = new Error("Your refresh token expired");
-        error.status = 403;
+        error.status = 401;
       }
 
       const { accessToken, refreshToken } = createTokens(userAuthId);

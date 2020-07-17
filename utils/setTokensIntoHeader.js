@@ -12,7 +12,7 @@ module.exports = ( accessToken, refreshToken, res ) => {
       }), cookie.serialize("refreshToken", refreshToken, {
       httpOnly: true,
       sameSite: "strict",
-      maxAge: 3600,
+      maxAge: 25200,
       path: "/",
     })
     ]
