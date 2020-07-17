@@ -37,7 +37,7 @@ module.exports = gql`
   type Query {
     user: User!
     logout: LogoutResponse!
-    spiderManCards(from: Int!,limit: Int, collectionPart: Int!): [SpiderManCard]!
+      spiderManCards(from: Int!,limit: Int, collectionPart: Int!): [SpiderManCard]!
     cardCollections: [CardCollection]!  
   }
 
