@@ -3,7 +3,7 @@ const { compare, hash } = require("bcrypt");
 const User = require("../models/user");
 const RefreshToken = require("../models/refreshToken");
 const Collections = require("../models/collections");
-const SpiderManHeroesAndVillainsPart1 = require("../models/spider-man-heroes-and-villains-part-1");
+const CardsModels = require("../models/cards");
 const createTokens = require('../utils/createTokens');
 const setTokensIntoHeader = require('../utils/setTokensIntoHeader');
 const getAuthenticatedUserId = require('../utils/getAuthenticatedUserId')
@@ -29,17 +29,16 @@ module.exports = {
       return userAuthId
     },
     spiderManCards: async ( _, { from, limit = 1, collectionPart = 1 }, { req } ) => {
-      // const userAuthId = getAuthenticatedUserId(req.cookies.accessToken || "");
-      // const currentUser = await User.findById(userAuthId);
-      // if ( !currentUser ) {
-      //   const error = new Error("You are hasn`t access here!");
-      //   error.status = 401;
-      //   throw error;
-      // }
-      return SpiderManHeroesAndVillainsPart1.find().sort("number asc").skip(((collectionPart - 1) * 275) + (from - 1)).limit(limit)
+      return CardsModels["spider-man-heroes-and-villains-part-1"].find().sort("number asc").skip(((collectionPart - 1) * 275) + (from - 1)).limit(limit)
+    },
+    cards: (_, {from, limit = 1, collectionName }) => {
+      return CardsModels[collectionName].find().sort("number asc").skip(from - 1).limit(limit)
     },
     cardCollections: () => {
       return Collections.find();
+    },
+    cardCollection: (_, {id}) => {
+      return Collections.findById(id)
     }
   },
   Mutation: {
@@ -91,7 +90,7 @@ module.exports = {
       const userAuthId = getAuthenticatedUserId(req.cookies.accessToken || "");
 
       const token = await RefreshToken.find({ token: req.cookies.refreshToken })
-      if(!token){
+      if ( !token ) {
         const error = new Error("Your refresh token expired");
         error.status = 401;
       }
@@ -101,6 +100,12 @@ module.exports = {
 
       await RefreshToken.findOneAndUpdate({ userId: userAuthId }, { token: refreshToken });
       return { id: userAuthId };
+    },
+    addCard: ( _, { number, name, rarity, role, imageUrl } ) => {
+      const card = new CardsModels["spider-man-heroes-and-villains-part-1"]({
+        number, name, rarity, role, imageUrl, need: 0, have: 0
+      });
+      return card.save();
     }
   }
 };
