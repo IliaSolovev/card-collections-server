@@ -32,7 +32,8 @@ module.exports = gql`
     cardCollectionName: String!
     imageUrl: String
     cardsCount: Int!
-    release: Int!
+    release: Int!,
+    cards: [Card]
   }
   
   type Card {
@@ -45,17 +46,10 @@ module.exports = gql`
       have: Int!
       number: Int!
   }
-  
-  input CardInput {
-      from: Int!,
-      limit: Int!,
-      collectionName: String! 
-  }
-  
+    
   type Query {
     user: User!
     logout: LogoutResponse!
-    spiderManCards(from: Int!,limit: Int, collectionPart: Int!): [Card]!
     cardCollections: [CardCollection]!  
     cards(from: Int!, limit: Int!, collectionName: String! ): [Card]!
     cardCollection(id: ID): CardCollection! 

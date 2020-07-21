@@ -9,6 +9,11 @@ const setTokensIntoHeader = require('../utils/setTokensIntoHeader');
 const getAuthenticatedUserId = require('../utils/getAuthenticatedUserId')
 
 module.exports = {
+  CardCollection: {
+    cards: ({cardCollectionName}) => {
+      return CardsModels[cardCollectionName].find().sort("number asc").limit(8)
+    }
+  },
   Query: {
     user: ( _, __, context ) => {
       return User.findById("5f0e02f09cd4921430b102a3");
@@ -28,13 +33,10 @@ module.exports = {
 
       return userAuthId
     },
-    spiderManCards: async ( _, { from, limit = 1, collectionPart = 1 }, { req } ) => {
-      return CardsModels["spider-man-heroes-and-villains-part-1"].find().sort("number asc").skip(((collectionPart - 1) * 275) + (from - 1)).limit(limit)
-    },
     cards: (_, {from, limit = 1, collectionName }) => {
       return CardsModels[collectionName].find().sort("number asc").skip(from - 1).limit(limit)
     },
-    cardCollections: () => {
+    cardCollections: async (_, __, { req, res }) => {
       return Collections.find();
     },
     cardCollection: (_, {id}) => {
@@ -89,10 +91,12 @@ module.exports = {
     refreshToken: async ( _, __, { res, req } ) => {
       const userAuthId = getAuthenticatedUserId(req.cookies.accessToken || "");
 
-      const token = await RefreshToken.find({ token: req.cookies.refreshToken })
+      const token = await RefreshToken.findOne({ token: req.cookies.refreshToken })
       if ( !token ) {
+        console.log(token)
         const error = new Error("Your refresh token expired");
         error.status = 401;
+        throw error;
       }
 
       const { accessToken, refreshToken } = createTokens(userAuthId);
