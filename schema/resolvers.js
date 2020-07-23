@@ -4,6 +4,7 @@ const User = require("../models/user");
 const RefreshToken = require("../models/refreshToken");
 const Collections = require("../models/collections");
 const CardsModels = require("../models/cards");
+const ConfirmToken = require("../models/confirmToken");
 const createTokens = require('../utils/createTokens');
 const setTokensIntoHeader = require('../utils/setTokensIntoHeader');
 const getAuthenticatedUserId = require('../utils/getAuthenticatedUserId')
@@ -44,19 +45,28 @@ module.exports = {
     }
   },
   Mutation: {
-    registerUser: async ( _, { login, password } ) => {
-      const existingUser = await User.findOne({ login });
+    registerUser: async ( _, { login, password, email } ) => {
+      const existingUserByLogin = await User.findOne({ login });
+      const existingUserByEmail = await User.findOne({ email });
 
-      if ( existingUser ) {
+      if ( existingUserByLogin ) {
         const error = new Error("User exists already!");
         error.status = 403;
         throw error;
       }
+
+      if (existingUserByEmail) {
+        const error = new Error("User with this email already exists");
+        error.status = 403;
+        throw error;
+      }
+
       const hashedPassword = await hash(password, 12);
       const user = new User({
         login,
         password: hashedPassword,
-
+        email,
+        activeStatus: false
       });
       const registeredUser = await user.save();
 
@@ -69,7 +79,8 @@ module.exports = {
     },
     login: async ( _, { login, password }, { res } ) => {
       const user = await User.findOne({ login });
-      if ( !user ) {
+
+      if ( !user || !user.activeStatus ) {
         const error = new Error("User does not exist!");
         error.status = 403;
         throw error;
@@ -93,7 +104,6 @@ module.exports = {
 
       const token = await RefreshToken.findOne({ token: req.cookies.refreshToken })
       if ( !token ) {
-        console.log(token)
         const error = new Error("Your refresh token expired");
         error.status = 401;
         throw error;

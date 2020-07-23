@@ -7,6 +7,7 @@ module.exports = gql`
   type RegisterResponse {
     id: ID!
     login: String!
+    email: String!
   }
   type LoginResponse {
     id: ID!
@@ -56,7 +57,7 @@ module.exports = gql`
   }
 
   type Mutation {
-    registerUser(login: String!, password: String!): RegisterResponse!
+    registerUser(login: String!, password: String!, email: String!): RegisterResponse!
     login(login: String!, password: String!): LoginResponse!
     refreshToken: User!,
     addCard(number:Int!, name: String!, rarity: String!, role: String!, imageUrl: String!): Card! 
