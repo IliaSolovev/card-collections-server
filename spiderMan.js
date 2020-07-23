@@ -2121,3 +2121,5 @@ const spiderManCards3 = [ {
   "kind": "Суперместа",
   "type": "-"
 }, { "number": "825", "name": "Человек-Паук против Мистерио", "kind": "Карточка-бонус", "type": "-" } ]
+
+module.exports = { spiderManCards1, spiderManCards2, spiderManCards3 }

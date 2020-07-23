@@ -1330,3 +1330,5 @@ const turtlesPart2 = [ { "number": "261", "name": "Сила четверых", "
   "kind": "СР",
   "type": "-"
 } ]
+
+module.exports = { turtlesPart1, turtlesPart2 }

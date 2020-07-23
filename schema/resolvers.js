@@ -10,15 +10,11 @@ const getAuthenticatedUserId = require('../utils/getAuthenticatedUserId')
 
 module.exports = {
   CardCollection: {
-    cards: ({cardCollectionName}) => {
-      return CardsModels[cardCollectionName].find().sort("number asc").limit(8)
+    cards: ( { cardCollectionName } ) => {
+      return CardsModels[cardCollectionName].find().limit(8)
     }
   },
   Query: {
-    user: ( _, __, context ) => {
-      return User.findById("5f0e02f09cd4921430b102a3");
-    },
-
     logout: ( _, __, { req, res } ) => {
       const userAuthId = getAuthenticatedUserId(req.cookies.accessToken || "");
       res.setHeader(
@@ -33,15 +29,15 @@ module.exports = {
 
       return userAuthId
     },
-    cards: (_, {from, limit = 1, collectionName }) => {
-      return CardsModels[collectionName].find().sort("number asc").skip(from - 1).limit(limit)
+    cards: ( _, { from, limit = 1, collectionName } ) => {
+      return CardsModels[collectionName].find().skip(from - 1).limit(limit)
     },
-    cardCollections: async (_, __, { req, res }) => {
+    cardCollections: async ( _, __, { req, res } ) => {
       return Collections.find();
     },
-    cardCollection: (_, {id}) => {
+    cardCollection: ( _, { id } ) => {
       return Collections.findById(id)
-    }
+    },
   },
   Mutation: {
     registerUser: async ( _, { login, password } ) => {
@@ -93,7 +89,6 @@ module.exports = {
 
       const token = await RefreshToken.findOne({ token: req.cookies.refreshToken })
       if ( !token ) {
-        console.log(token)
         const error = new Error("Your refresh token expired");
         error.status = 401;
         throw error;
@@ -106,10 +101,43 @@ module.exports = {
       return { id: userAuthId };
     },
     addCard: ( _, { number, name, rarity, role, imageUrl } ) => {
+
       const card = new CardsModels["spider-man-heroes-and-villains-part-1"]({
         number, name, rarity, role, imageUrl, need: 0, have: 0
       });
       return card.save();
-    }
+    },
+    // turtleTest: async ( _, { number, name, rarity, role, imageUrl } ) => {
+    //   const returnRarity = (type) => {
+    //     switch (type) {
+    //       case "О":
+    //         return "обычная"
+    //       case "Р":
+    //         return 'редкая'
+    //       case "СР":
+    //         return 'супер редкая'
+    //       case "УР":
+    //         return 'ультра редкая'
+    //       default:
+    //         return 'обычная'
+    //     }
+    //   }
+    //   for( let i = 0; i < turtlesPart2.length; i++){
+    //     const variables = {
+    //       number: turtlesPart2[i].number,
+    //       name: turtlesPart2[i].name,
+    //       rarity: returnRarity(turtlesPart2[i].kind),
+    //       role: turtlesPart2[i].type,
+    //       imageUrl: `https://www.laststicker.ru/i/cards/274/${turtlesPart2[i].number}.jpg`,
+    //       need: 0,
+    //       have: 0
+    //     }
+    //     const res = new CardsModels[""](variables)
+    //
+    //     await res.save();
+    //   }
+    //
+    //   return { id: 'asd' }
+    // }
   }
 };

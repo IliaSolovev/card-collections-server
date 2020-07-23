@@ -8,8 +8,9 @@ const cards = new Schema({
   role: String,
   need: Number,
   have: Number,
-  number: Number,
+  number: String,
 });
+
 
 module.exports = {
   "spider-man-heroes-and-villains-part-1":  mongoose.model('spider-man-heroes-and-villains-part-1', cards),

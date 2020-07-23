@@ -44,21 +44,20 @@ module.exports = gql`
       rarity: String!
       need: Int!
       have: Int!
-      number: Int!
+      number: String!
   }
-    
+  
   type Query {
-    user: User!
     logout: LogoutResponse!
     cardCollections: [CardCollection]!  
     cards(from: Int!, limit: Int!, collectionName: String! ): [Card]!
-    cardCollection(id: ID): CardCollection! 
+    cardCollection(id: ID): CardCollection!
   }
 
   type Mutation {
     registerUser(login: String!, password: String!): RegisterResponse!
     login(login: String!, password: String!): LoginResponse!
     refreshToken: User!,
-    addCard(number:Int!, name: String!, rarity: String!, role: String!, imageUrl: String!): Card! 
+    addCard(number:String!, name: String!, rarity: String!, role: String!, imageUrl: String!): Card!
   }
 `;
