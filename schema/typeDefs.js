@@ -62,5 +62,7 @@ module.exports = gql`
     refreshToken: User!
     addCard(number:Int!, name: String!, rarity: String!, role: String!, imageUrl: String!): Card!
     confirmUser(token: String!): User
+    resetPasswordMessage(email: String!): User  
+    resetPassword(token: String!, newPassword: String!): User  
   }
 `;

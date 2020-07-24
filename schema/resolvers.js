@@ -6,10 +6,11 @@ const RefreshToken = require("../models/refreshToken");
 const Collections = require("../models/collections");
 const CardsModels = require("../models/cards");
 const ConfirmToken = require("../models/confirmToken");
+const ResetPasswordToken = require("../models/resetPasswordToken");
 const createTokens = require('../utils/createTokens');
 const setTokensIntoHeader = require('../utils/setTokensIntoHeader');
 const getAuthenticatedUserId = require('../utils/getAuthenticatedUserId')
-const sendAuthorizationMessage = require('../utils/sendAuthorizationMessage')
+const { sendAuthorizationMessage, sendResetPasswordMessage } = require('../utils/sendAuthorizationMessage')
 
 module.exports = {
   CardCollection: {
@@ -143,13 +144,49 @@ module.exports = {
           error.status = 403;
           throw error;
         }
-        await User.findByIdAndUpdate( existedToken.userId,{confirmed: true})
+        await User.findByIdAndUpdate(existedToken.userId, { confirmed: true })
         await ConfirmToken.findOneAndRemove({ token });
-        return {id: existedToken.userId}
-      }catch (e) {
+        return { id: existedToken.userId }
+      } catch (e) {
         throw e
       }
 
+    },
+    resetPasswordMessage: async ( _, { email } ) => {
+      try {
+        const user = await User.findOne({ email });
+        if ( !user ) {
+          const error = new Error("Can`t find user with this email!");
+          error.status = 403;
+          throw error;
+        }
+        const token = uuidv4();
+        await sendResetPasswordMessage(token, email);
+        const resetPasswordTokenDocument = await new ResetPasswordToken({
+          token,
+          userId: user.id
+        })
+        await resetPasswordTokenDocument.save();
+        return { id: user.id }
+      } catch (e) {
+        throw e;
+      }
+    },
+    resetPassword: async ( _, { token, newPassword } ) => {
+      try {
+        const existedToken = await ResetPasswordToken.findOne({ token });
+
+        if ( !existedToken ) {
+          const error = new Error("This token does not exist!");
+          error.status = 403;
+          throw error;
+        }
+        const hashedPassword = await hash(newPassword, 12);
+        await User.findByIdAndUpdate(existedToken.userId, { password: hashedPassword });
+        return { id: existedToken.userId }
+      } catch (e) {
+        throw e
+      }
     }
   }
 }

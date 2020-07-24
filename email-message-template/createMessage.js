@@ -1,4 +1,4 @@
-const createMessage = ( token ) => {
+const createMessage = ( token, buttonText='Подтверждение регистрации', url='confirm' ) => {
   return `
     <!doctype html>
 <html lang="en">
@@ -111,12 +111,11 @@ const createMessage = ( token ) => {
 
                         <h2>Привет</h2>
 
-                        <p>Это сайт "Супергеройские коллекции". Вот твой код на подтверждение профиля:</p>
                         <table>
                             <tr>
                                 <td align="center">
                                     <p>
-                                        <a href='http://localhost:3000/confirm/${ token }' class="button">Подтверждение регистрации</a>
+                                        <a href='http://localhost:3000/${url}/${ token }' class="button">${buttonText}</a>
                                     </p>
                                 </td>
                             </tr>

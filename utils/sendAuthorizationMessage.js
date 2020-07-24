@@ -12,10 +12,19 @@ const sendAuthorizationMessage = async (token, email) => {
   const Message = {
     from: "eblo1.eblo1@gmail.com",
     to: email,
-    subject: "Message title",
-    html: createMessage(token),
+    subject: "Подтверждение регистрации",
+    html: createMessage(token, 'Подтверждение регистрации','confirm'),
   };
   await transporter.sendMail(Message);
 }
 
-module.exports = sendAuthorizationMessage
+const sendResetPasswordMessage = async (token, email) => {
+  const Message = {
+    from: "eblo1.eblo1@gmail.com",
+    to: email,
+    subject: "Сброс пароля",
+    html: createMessage(token, 'Сброс пароля','resetPassword'),
+  };
+  await transporter.sendMail(Message);
+}
+module.exports = { sendAuthorizationMessage, sendResetPasswordMessage}
