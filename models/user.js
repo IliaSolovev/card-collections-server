@@ -5,7 +5,7 @@ const userSchema = new Schema({
     login: String,
     password: String,
     email: String,
-    activeStatus: Boolean,
+    confirmed: Boolean,
 });
 
 module.exports = mongoose.model('users', userSchema);

@@ -1,4 +1,5 @@
 const { compare, hash } = require("bcrypt");
+const { v4: uuidv4 } = require("uuid");
 
 const User = require("../models/user");
 const RefreshToken = require("../models/refreshToken");
@@ -8,18 +9,20 @@ const ConfirmToken = require("../models/confirmToken");
 const createTokens = require('../utils/createTokens');
 const setTokensIntoHeader = require('../utils/setTokensIntoHeader');
 const getAuthenticatedUserId = require('../utils/getAuthenticatedUserId')
+const sendAuthorizationMessage = require('../utils/sendAuthorizationMessage')
 
 module.exports = {
   CardCollection: {
-    cards: ({cardCollectionName}) => {
+    cards: ( { cardCollectionName } ) => {
       return CardsModels[cardCollectionName].find().sort("number asc").limit(8)
     }
   },
   Query: {
-    user: ( _, __, context ) => {
-      return User.findById("5f0e02f09cd4921430b102a3");
-    },
+    user: async ( _, __, context ) => {
+      // await sendAuthorizationMessage(uuidv4(), "pavlik.sokolov.2000@gmail.com");
 
+      return User.find();
+    },
     logout: ( _, __, { req, res } ) => {
       const userAuthId = getAuthenticatedUserId(req.cookies.accessToken || "");
       res.setHeader(
@@ -34,48 +37,58 @@ module.exports = {
 
       return userAuthId
     },
-    cards: (_, {from, limit = 1, collectionName }) => {
+    cards: ( _, { from, limit = 1, collectionName } ) => {
       return CardsModels[collectionName].find().sort("number asc").skip(from - 1).limit(limit)
     },
-    cardCollections: async (_, __, { req, res }) => {
+    cardCollections: async ( _, __, { req, res } ) => {
       return Collections.find();
     },
-    cardCollection: (_, {id}) => {
+    cardCollection: ( _, { id } ) => {
       return Collections.findById(id)
     }
   },
   Mutation: {
     registerUser: async ( _, { login, password, email } ) => {
-      const existingUserByLogin = await User.findOne({ login });
-      const existingUserByEmail = await User.findOne({ email });
+      try {
+        const existingUserByLogin = await User.findOne({ login });
+        const existingUserByEmail = await User.findOne({ email });
 
-      if ( existingUserByLogin ) {
-        const error = new Error("User exists already!");
-        error.status = 403;
-        throw error;
+        if ( existingUserByLogin ) {
+          const error = new Error("User exists already!");
+          error.status = 403;
+          throw error;
+        }
+
+        if ( existingUserByEmail ) {
+          const error = new Error("User with this email already exists");
+          error.status = 403;
+          throw error;
+        }
+
+        const hashedPassword = await hash(password, 12);
+        const user = new User({
+          login,
+          password: hashedPassword,
+          email,
+          confirmed: false
+        });
+        const registeredUser = await user.save();
+        const refreshToken = new RefreshToken({
+          token: '',
+          userId: registeredUser.id
+        })
+        await refreshToken.save();
+        const confirmToken = uuidv4();
+        const confirmTokenDocument = new ConfirmToken({
+          token: confirmToken,
+          userId: registeredUser.id
+        });
+        confirmTokenDocument.save();
+        await sendAuthorizationMessage(confirmToken, email);
+        return { id: registeredUser.id, login: registeredUser.login, email: registeredUser.email };
+      } catch (e) {
+        throw e;
       }
-
-      if (existingUserByEmail) {
-        const error = new Error("User with this email already exists");
-        error.status = 403;
-        throw error;
-      }
-
-      const hashedPassword = await hash(password, 12);
-      const user = new User({
-        login,
-        password: hashedPassword,
-        email,
-        activeStatus: false
-      });
-      const registeredUser = await user.save();
-
-      const refreshToken = new RefreshToken({
-        token: '',
-        userId: registeredUser.id
-      })
-      await refreshToken.save();
-      return { id: registeredUser.id, login: registeredUser.login };
     },
     login: async ( _, { login, password }, { res } ) => {
       const user = await User.findOne({ login });
@@ -120,6 +133,22 @@ module.exports = {
         number, name, rarity, role, imageUrl, need: 0, have: 0
       });
       return card.save();
+    },
+    confirmUser: async ( _, { token } ) => {
+      try {
+        const existedToken = await ConfirmToken.findOne({ token });
+        if ( !existedToken ) {
+          const error = new Error("This token does not exist!");
+          error.status = 403;
+          throw error;
+        }
+        await User.findByIdAndUpdate( existedToken.userId,{confirmed: true})
+        await ConfirmToken.findOneAndRemove({ token });
+        return {id: existedToken.userId}
+      }catch (e) {
+        throw e
+      }
+
     }
   }
-};
+}
