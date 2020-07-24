@@ -7,6 +7,7 @@ module.exports = gql`
   type RegisterResponse {
     id: ID!
     login: String!
+    email: String!
   }
   type LoginResponse {
     id: ID!
@@ -44,20 +45,22 @@ module.exports = gql`
       rarity: String!
       need: Int!
       have: Int!
-      number: String!
+      number: Int!
   }
-  
+    
   type Query {
+    user: User!
     logout: LogoutResponse!
     cardCollections: [CardCollection]!  
     cards(from: Int!, limit: Int!, collectionName: String! ): [Card]!
-    cardCollection(id: ID): CardCollection!
+    cardCollection(id: ID): CardCollection! 
   }
 
   type Mutation {
-    registerUser(login: String!, password: String!): RegisterResponse!
+    registerUser(login: String!, password: String!, email: String!): RegisterResponse!
     login(login: String!, password: String!): LoginResponse!
-    refreshToken: User!,
-    addCard(number:String!, name: String!, rarity: String!, role: String!, imageUrl: String!): Card!
+    refreshToken: User!
+    addCard(number:Int!, name: String!, rarity: String!, role: String!, imageUrl: String!): Card!
+    confirmUser(token: String!): User
   }
 `;
