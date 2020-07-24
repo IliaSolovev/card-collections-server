@@ -183,6 +183,7 @@ module.exports = {
         }
         const hashedPassword = await hash(newPassword, 12);
         await User.findByIdAndUpdate(existedToken.userId, { password: hashedPassword });
+        await ResetPasswordToken.findOneAndRemove({ token });
         return { id: existedToken.userId }
       } catch (e) {
         throw e
