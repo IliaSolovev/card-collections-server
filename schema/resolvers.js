@@ -93,7 +93,7 @@ module.exports = {
     login: async ( _, { login, password }, { res } ) => {
       const user = await User.findOne({ login });
 
-      if ( !user || !user.activeStatus ) {
+      if ( !user || !user.confirmed ) {
         const error = new Error("User does not exist!");
         error.status = 403;
         throw error;
@@ -137,6 +137,7 @@ module.exports = {
     confirmUser: async ( _, { token } ) => {
       try {
         const existedToken = await ConfirmToken.findOne({ token });
+
         if ( !existedToken ) {
           const error = new Error("This token does not exist!");
           error.status = 403;
