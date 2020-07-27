@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
+const path = require("path");
+const { graphqlUploadExpress } = require("graphql-upload");
 const { ApolloServer } = require("apollo-server-express");
 const express = require("express");
-const cors = require("cors")
-const cookieParser = require('cookie-parser')
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 const typeDefs = require("../schema/typeDefs");
 const resolvers = require("../schema/resolvers");
@@ -17,29 +19,33 @@ mongoose.connect(
 const app = express();
 
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
-app.use(cookieParser())
+app.use(cookieParser());
+app.use("/images", express.static(path.join(`../${__dirname}`, "images")));
+app.use(graphqlUploadExpress());
+// app.use(fileMiddleware.single("avatar"));
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: ({ req, res }) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
     return {
       req,
       res,
     };
   },
+  uploads: false,
 });
 
 server.applyMiddleware({
-  app
+  app,
 });
 
-mongoose.set('useFindAndModify', false);
+mongoose.set("useFindAndModify", false);
 const dbConnection = mongoose.connection;
 dbConnection.on("error", (err) => console.log(`Connection error: ${err}`));
 dbConnection.once("open", () => console.log("Connected to DB!"));
 
 app.listen({ port: 4001 }, () => {
-  console.log(`🚀  Server ready at`)
-})
+  console.log(`🚀  Server ready at`);
+});

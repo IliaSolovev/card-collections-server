@@ -1,8 +1,14 @@
 const { gql } = require('apollo-server-express');
 
 module.exports = gql`
+  scalar Upload
+
   type User {
     id: ID!
+    name: String!
+    email: String!
+    avatarUrl: String!
+    confirmed: Boolean!
   }
   type RegisterResponse {
     id: ID!
@@ -15,7 +21,10 @@ module.exports = gql`
   type LogoutResponse {
     id: ID!
   }
-  
+  type FileUploadResponse {
+    id: ID!
+  }
+
   type SpiderManCard {
     id: ID!
     name: String!
@@ -49,7 +58,7 @@ module.exports = gql`
   }
     
   type Query {
-    user: User!
+    user(id: ID!): User!
     logout: LogoutResponse!
     cardCollections: [CardCollection]!  
     cards(from: Int!, limit: Int!, collectionName: String! ): [Card]!
@@ -63,6 +72,7 @@ module.exports = gql`
     addCard(number:Int!, name: String!, rarity: String!, role: String!, imageUrl: String!): Card!
     confirmUser(token: String!): User
     resetPasswordMessage(email: String!): User  
-    resetPassword(token: String!, newPassword: String!): User  
+    resetPassword(token: String!, newPassword: String!): User
+    setAvatar(id: ID!, avatar: Upload!): FileUploadResponse
   }
 `;
